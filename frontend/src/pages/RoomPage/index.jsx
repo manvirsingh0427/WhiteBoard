@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import "./index.css";
 
-import WhiteBoard from "../../components/Whiteboard";
+import WhiteBoard from "../../components/WhiteBoard";
 import Chat from "../../components/ChatBar";
 import { toast } from "react-toastify";
 
