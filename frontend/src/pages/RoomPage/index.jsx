@@ -172,7 +172,7 @@ const RoomPage = ({
       </h1>
       {user?.presenter && (
         <div className="col-md-10 mx-auto px-5 mb-3 d-flex align-items-center jusitfy-content-center">
-          <div className="d-flex col-md-2 justify-content-center gap-1">
+          <div className="d-flex col-md-2 justify-content-center gap-4">
             <div className="d-flex gap-1 align-items-center">
               <label htmlFor="pencil">Pencil</label>
               <input
@@ -239,7 +239,7 @@ const RoomPage = ({
             </button>
           </div>
           <div className="col-md-2">
-            <button className="btn btn-danger" onClick={handleClearCanvas}>
+            <button className="btn btn-dark" onClick={handleClearCanvas}>
               Clear Canvas
             </button>
           </div>

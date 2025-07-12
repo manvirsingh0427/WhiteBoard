@@ -6,18 +6,7 @@ const { Server } = require("socket.io");
 
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users');
 
-// const { PeerServer } = require("peer");
-
-// const peerServer = PeerServer({
-//   host:"/".
-//   port: 5001,
-//   path: "/",
-// });
-
-// app.use(peerServer);
-
 const io = new Server(server);
-// server.on("upgrade", (request, socket, head) => {});
 
 // routes
 app.get("/", (req, res) => {
@@ -59,6 +48,10 @@ io.on("connection", (socket) => {
     socket.broadcast.to(roomIdGlobal).emit("whiteBoardDataResponse", {
       imgURL: data,
     });
+  });
+
+  socket.on("toggleDarkMode", (mode) => {
+    socket.broadcast.to(roomIdGlobal).emit("toggleDarkMode", mode);
   });
 
   socket.on("message", (data) => {
