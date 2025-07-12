@@ -1,0 +1,25 @@
+.cyan-input {
+  border-radius: 10px;
+  border: 2px solid var(--cyan);
+  padding: 10px;
+  transition: 0.3s ease;
+}
+
+.cyan-input:focus {
+  border-color: var(--cyan-dark);
+  box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+}
+
+.btn-cyan {
+  background-color: var(--cyan);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  padding: 8px 16px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cyan:hover {
+  background-color: var(--cyan-dark);
+}

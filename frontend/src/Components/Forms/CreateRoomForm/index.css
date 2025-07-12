@@ -1,0 +1,47 @@
+.cyan-input {
+  border-radius: 10px;
+  border: 2px solid var(--cyan);
+  padding: 10px;
+  transition: 0.3s ease;
+}
+
+.cyan-input:focus {
+  border-color: var(--cyan-dark);
+  box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+}
+
+.disabled-input {
+  background-color: var(--gray-light);
+  color: #666;
+}
+
+/* Buttons */
+.btn-cyan {
+  background-color: var(--cyan);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  padding: 8px 16px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cyan:hover {
+  background-color: var(--cyan-dark);
+}
+
+.btn-outline-cyan {
+  background-color: transparent;
+  color: var(--cyan);
+  border: 2px solid var(--cyan);
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-cyan:hover {
+  background-color: var(--cyan);
+  color: white;
+}
+
