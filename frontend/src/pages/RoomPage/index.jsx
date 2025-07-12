@@ -167,7 +167,7 @@ const RoomPage = ({
         <Chat setOpenedChatTab={setOpenedChatTab} socket={socket} />
       )}
       <h1 className="text-center py-4">
-        White Board Sharing App{" "}
+        CollabCanvas{" "}
         <span className="text-primary">[Users Online : {users.length}]</span>
       </h1>
       {user?.presenter && (
