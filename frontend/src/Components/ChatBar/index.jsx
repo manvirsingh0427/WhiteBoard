@@ -55,8 +55,8 @@ const Chat = ({ setOpenedChatTab, socket }) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <button type="submit" className="btn btn-primary rounded-0">
-          Send
+        <button type="submit" className="btn btn-success rounded-0">
+          ⌯⌲
         </button>
       </form>
     </div>

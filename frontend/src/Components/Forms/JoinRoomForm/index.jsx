@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Peer from "peerjs";
 
-const JoinRoomForm = ({ uuid, socket, setUser, setMyPeer }) => {
+const JoinRoomForm = ({ socket, setUser }) => {
   const [roomId, setRoomId] = useState("");
   const [name, setName] = useState("");
   const navigate = useNavigate();
@@ -11,31 +10,17 @@ const JoinRoomForm = ({ uuid, socket, setUser, setMyPeer }) => {
     e.preventDefault();
     if (!name.trim() || !roomId.trim()) return;
 
-    const myPeer = new Peer(undefined, {
-      host: "localhost",
-      port: 5001,
-      path: "/",
-    });
+    const roomData = {
+      name,
+      roomId,
+      userId: Date.now().toString(), // Using timestamp as dummy unique ID
+      host: false,
+      presenter: false,
+    };
 
-    setMyPeer(myPeer);
-
-    myPeer.on("open", (id) => {
-      const roomData = {
-        name,
-        roomId,
-        userId: id,
-        host: false,
-        presenter: false,
-      };
-      setUser(roomData);
-      navigate(`/${roomId}`);
-      socket.emit("userJoined", roomData);
-    });
-
-    myPeer.on("error", (err) => {
-      console.error("peer connection error", err);
-      myPeer.reconnect();
-    });
+    setUser(roomData);
+    socket.emit("userJoined", roomData);
+    navigate(`/${roomId}`);
   };
 
   return (

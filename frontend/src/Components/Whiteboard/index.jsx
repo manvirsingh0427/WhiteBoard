@@ -1,3 +1,4 @@
+// Heart of Our App
 import { useEffect, useState, useLayoutEffect } from "react";
 import rough from "roughjs";
 
@@ -26,16 +27,24 @@ const WhiteBoard = ({
     socket.on("toggleDarkMode", (mode) => {
       setDarkMode(mode);
     });
+
+    socket.on("draw-text", (textData) => {
+      setElements((prev) => [...prev, textData]);
+    });
+
+    return () => {
+      socket.off("whiteBoardDataResponse");
+      socket.off("toggleDarkMode");
+      socket.off("draw-text");
+    };
   }, []);
 
-  // Send toggle event
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
     socket.emit("toggleDarkMode", newMode);
   };
 
-  // View-only user display
   if (!user?.presenter) {
     return (
       <div
@@ -52,7 +61,6 @@ const WhiteBoard = ({
     );
   }
 
-  // Setup canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -69,14 +77,12 @@ const WhiteBoard = ({
     ctxRef.current = ctx;
   }, [canvasRef, ctxRef]);
 
-  // Update stroke color
   useEffect(() => {
     if (ctxRef.current) {
       ctxRef.current.strokeStyle = color;
     }
   }, [color]);
 
-  // Draw all elements
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
@@ -89,7 +95,7 @@ const WhiteBoard = ({
     elements.forEach((element) => {
       const opts = {
         stroke: element.stroke,
-        strokeWidth: 5,
+        strokeWidth: 4,
         roughness: 0,
       };
 
@@ -113,8 +119,62 @@ const WhiteBoard = ({
             opts
           )
         );
-      } else if (element.type === "pencil") {
+      } 
+      else if (element.type === "eraser") {
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        const [first, ...rest] = element.path;
+        ctx.moveTo(...first);
+        rest.forEach(([x, y]) => ctx.lineTo(x, y));
+        ctx.lineWidth = 10;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+
+      else if(element.type === "circle"){
+        const radius = Math.sqrt(
+          Math.pow(element.width, 2) + Math.pow(element.height, 2)
+        );
+
+        roughCanvas.draw(
+          roughGenerator.circle(
+            element.offsetX,
+            element.offsetY,
+            radius*2,
+            opts
+          )
+        )
+      }
+
+      else if (element.type === "triangle") {
+      const { offsetX, offsetY, width, height } = element;
+      const x1 = offsetX;
+      const y1 = offsetY;
+      const x2 = offsetX + width;
+      const y2 = offsetY + height;
+      const x3 = offsetX - width;
+      const y3 = offsetY + height;
+
+      roughCanvas.draw(
+        roughGenerator.polygon(
+          [
+            [x1, y1],
+            [x2, y2],
+            [x3, y3],
+          ],
+          opts
+        )
+      );
+    }
+      
+      else if (element.type === "pencil") {
         roughCanvas.linearPath(element.path, opts);
+      } else if (element.type === "text") {
+        ctx.fillStyle = element.stroke;
+        ctx.font = "24px sans-serif";
+        ctx.fillText(element.text, element.offsetX, element.offsetY);
       }
     });
 
@@ -122,7 +182,6 @@ const WhiteBoard = ({
     socket.emit("whiteboardData", canvasImage);
   }, [elements]);
 
-  // Drawing handlers
   const handleMouseDown = (e) => {
     const { offsetX, offsetY } = e.nativeEvent;
 
@@ -137,7 +196,17 @@ const WhiteBoard = ({
         ...prev,
         { ...base, type: "pencil", path: [[offsetX, offsetY]] },
       ]);
-    } else if (tool === "line") {
+    } else if (tool === "eraser") {
+      setElements((prev) => [
+        ...prev,
+        {
+          ...base,
+          type: "eraser",
+          path: [[offsetX, offsetY]],
+        },
+      ]);
+    }
+    else if (tool === "line") {
       setElements((prev) => [
         ...prev,
         { ...base, type: "line", width: offsetX, height: offsetY },
@@ -147,9 +216,30 @@ const WhiteBoard = ({
         ...prev,
         { ...base, type: "rect", width: 0, height: 0 },
       ]);
+    } else if(tool === "circle"){
+      setElements((prev)=>[
+        ...prev, 
+        {...base, type:"circle", width:0, height:0},
+      ]);
+    } else if(tool === "triangle"){
+      setElements((prev)=>[
+        ...prev, 
+        {...base, type:"triangle", width:0, height:0},
+      ]);
+    } else if (tool === "text") {
+      const input = prompt("Enter text:");
+      if (input) {
+        const textElement = {
+          ...base,
+          type: "text",
+          text: input,
+        };
+        setElements((prev) => [...prev, textElement]);
+        socket.emit("draw-text", textElement);
+      }
     }
 
-    setIsDrawing(true);
+    if (tool !== "text") setIsDrawing(true);
   };
 
   const handleMouseMove = (e) => {
@@ -165,13 +255,20 @@ const WhiteBoard = ({
             ...ele,
             path: [...ele.path, [offsetX, offsetY]],
           };
-        } else if (tool === "line") {
+        } 
+        else if (tool === "eraser") {
+        return {
+          ...ele,
+          path: [...ele.path, [offsetX, offsetY]],
+        };
+      }
+      else if (tool === "line") {
           return {
             ...ele,
             width: offsetX,
             height: offsetY,
           };
-        } else if (tool === "rect") {
+        } else if (tool === "rect" || tool === "circle" || tool === "triangle") {
           return {
             ...ele,
             width: offsetX - ele.offsetX,
@@ -191,11 +288,10 @@ const WhiteBoard = ({
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      className={`relative border border-3 h-full w-full overflow-hidden ${
+      className={`relative border border-3 h-screen w-full overflow-hidden ${
         darkMode ? "bg-black" : "bg-white"
       }`}
     >
-      {/* Toggle Button */}
       {user?.presenter && (
         <div
           className="absolute top-4 right-4 z-20"
@@ -207,12 +303,11 @@ const WhiteBoard = ({
             className="px-3 py-1 bg-gray-300 dark:bg-gray-800 text-sm rounded shadow"
             onClick={toggleDarkMode}
           >
-            {darkMode ? "Light Mode" : "Dark Mode"}
+            {darkMode ? "WhiteBoard" : "BlackBoard"}
           </button>
         </div>
       )}
 
-      {/* Canvas */}
       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );

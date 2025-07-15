@@ -10,9 +10,7 @@ const io = new Server(server);
 
 // routes
 app.get("/", (req, res) => {
-  res.send(
-    "This is mern realtime board sharing app official server by fullyworld web tutorials"
-  );
+  res.send("This is mern realtime board sharing app official server by Manvir Singh");
 });
 
 let roomIdGlobal, imgURLGlobal;
@@ -64,14 +62,21 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("draw-text", (textData) => {
+    socket.broadcast.to(roomIdGlobal).emit("draw-text", textData);
+  });
+
   socket.on("disconnect", () => {
     const user = getUser(socket.id);
     if (user) {
       removeUser(socket.id);
-      socket.broadcast.to(roomIdGlobal).emit("userLeftMessageBroadcasted", {
+      const updatedUsers = getUsersInRoom(user.roomId);
+      socket.broadcast.to(user.roomId).emit("userLeftMessageBroadcasted", {
         name: user.name,
         userId: user.userId,
+        users: updatedUsers,
       });
+      io.to(user.roomId).emit("allUsers", updatedUsers);
     }
   });
 });
